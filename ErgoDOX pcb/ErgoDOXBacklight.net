@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source "C:/Users/jstefansson/Revisions/ErgoDox/ErgoDOX pcb/ErgoDOX.sch")
-    (date "12/11/2013 10:00:34 PM")
+    (date "12/11/2013 10:17:58 PM")
     (tool "eeschema (2013-07-07 BZR 4022)-stable"))
   (components
     (comp (ref RC1)
@@ -251,6 +251,7 @@
       (tstamp 4FFD34EC))
     (comp (ref SW5:8)
       (value SW5:5)
+      (footprint MX_FLIP_DIODE_OPT)
       (libsource (lib component) (part SWITCH_DIODE))
       (sheetpath (names /) (tstamps /))
       (tstamp 4FFD34F2))
