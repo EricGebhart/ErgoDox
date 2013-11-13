@@ -68,7 +68,7 @@ $Descr A3 16535 11693
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "11 nov 2013"
+Date "13 nov 2013"
 Rev ""
 Comp ""
 Comment1 ""
@@ -1711,4 +1711,12 @@ Text Label 10200 7350 0    60   ~ 0
 G_EN
 Text Label 10200 7450 0    60   ~ 0
 B_EN
+Text Notes 12850 8050 0    60   ~ 0
+Red and Blue are reversed depending on\nleft/right hand
+Text Label 11050 1900 0    60   ~ 0
+LEDc
+Text Label 10800 2000 0    60   ~ 0
+LEDb
+Text Label 10550 2000 0    60   ~ 0
+LEDa
 $EndSCHEMATC
