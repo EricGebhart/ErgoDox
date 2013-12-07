@@ -1,12 +1,12 @@
 (kicad_pcb (version 3) (host pcbnew "(2013-07-07 BZR 4022)-stable")
 
   (general
-    (links 512)
-    (no_connects 2)
+    (links 0)
+    (no_connects 3)
     (area 22.890479 28.163519 259.962628 189.542421)
     (thickness 1.6002)
     (drawings 39)
-    (tracks 1331)
+    (tracks 1330)
     (zones 0)
     (modules 75)
     (nets 75)
@@ -24,11 +24,11 @@
     (21 F.SilkS user)
     (22 B.Mask user)
     (23 F.Mask user)
-    (24 Dwgs.User user hide)
-    (25 Cmts.User user hide)
-    (26 Eco1.User user hide)
+    (24 Dwgs.User user)
+    (25 Cmts.User user)
+    (26 Eco1.User user)
     (27 Eco2.User user)
-    (28 Edge.Cuts user hide)
+    (28 Edge.Cuts user)
   )
 
   (setup
@@ -262,13 +262,13 @@
     (add_net VCC)
   )
 
-  (module L1210R2R2MDWIT (layer Front) (tedit 52980F35) (tstamp 5297EE73)
+  (module L1210R2R2MDWIT (layer Front) (tedit 52A30E5B) (tstamp 5297EE73)
     (at 190.5 55.375 90)
     (descr "SMT capacitor, 1210")
     (fp_text reference L1210R2R2MDWIT (at 0.025 2.025 90) (layer F.SilkS) hide
       (effects (font (size 0.50038 0.50038) (thickness 0.11938)))
     )
-    (fp_text value L1 (at -0.0254 1.7272 90) (layer F.SilkS) hide
+    (fp_text value L1 (at 2.775 0 180) (layer F.SilkS) hide
       (effects (font (size 0.50038 0.50038) (thickness 0.11938)))
     )
     (fp_line (start -1.6002 -1.2446) (end -1.6002 1.2446) (layer F.SilkS) (width 0.127))
@@ -339,14 +339,14 @@
     )
   )
 
-  (module LRTB_C9TP (layer Back) (tedit 52878DD8) (tstamp 52878E15)
+  (module LRTB_C9TP (layer Back) (tedit 52A30DA4) (tstamp 52878E15)
     (at 201.93 46.99 90)
     (solder_mask_margin 0.05)
     (zone_connect 1)
     (fp_text reference "LRTB C9TP" (at 0.17 2.15 90) (layer B.SilkS)
       (effects (font (size 0.5 0.5) (thickness 0.125)) (justify mirror))
     )
-    (fp_text value RGB_LED1 (at 2.794 0 180) (layer B.SilkS)
+    (fp_text value RGB_LED1 (at 2.69 -0.03 180) (layer B.SilkS)
       (effects (font (size 0.5 0.5) (thickness 0.125)) (justify mirror))
     )
     (fp_line (start -2.25 1.5) (end 2.25 1.5) (layer B.SilkS) (width 0.2))
@@ -385,11 +385,11 @@
     )
   )
 
-  (module LRTB_C9TP (layer Front) (tedit 52878DCB) (tstamp 528465FB)
+  (module LRTB_C9TP (layer Front) (tedit 52A30DB2) (tstamp 528465FB)
     (at 201.93 46.99 270)
     (path /527EFC75)
     (solder_mask_margin 0.05)
-    (fp_text reference RGB_LED1 (at -2.794 0 360) (layer F.SilkS)
+    (fp_text reference RGB_LED1 (at -2.69 0.03 360) (layer F.SilkS)
       (effects (font (size 0.5 0.5) (thickness 0.125)))
     )
     (fp_text value LRTB_C9TP (at -0.127 -2.159 270) (layer F.SilkS)
@@ -1733,11 +1733,11 @@
     )
   )
 
-  (module L1210R2R2MDWIT (layer Back) (tedit 5282F5E2) (tstamp 527FEBB9)
+  (module L1210R2R2MDWIT (layer Back) (tedit 52A30E49) (tstamp 527FEBB9)
     (at 190.5 55.372 270)
     (descr "SMT capacitor, 1210")
     (path /527C89AF)
-    (fp_text reference L1 (at 0.028 0.08 360) (layer B.SilkS)
+    (fp_text reference L1 (at -2.772 0 360) (layer B.SilkS)
       (effects (font (size 0.50038 0.50038) (thickness 0.11938)) (justify mirror))
     )
     (fp_text value "2.2 µH, 1900 mA" (at 0 -2.032 270) (layer B.SilkS) hide
@@ -1764,11 +1764,11 @@
     )
   )
 
-  (module C1206C106J8RACTU (layer Back) (tedit 5297EFBB) (tstamp 527FFCEB)
+  (module C1206C106J8RACTU (layer Back) (tedit 52A30E28) (tstamp 527FFCEB)
     (at 186.3 55.3 180)
     (descr "SMT capacitor, 1206")
     (path /527CA080)
-    (fp_text reference CIN1 (at -0.06 0.04 270) (layer B.SilkS)
+    (fp_text reference CIN1 (at 0 -1.5 180) (layer B.SilkS)
       (effects (font (size 0.50038 0.50038) (thickness 0.11938)) (justify mirror))
     )
     (fp_text value "CAP 10 µF" (at -0.1 1.5 180) (layer B.SilkS) hide
@@ -1795,11 +1795,11 @@
     )
   )
 
-  (module C1206C475J8NACTU (layer Back) (tedit 5297F030) (tstamp 527FFE6C)
+  (module C1206C475J8NACTU (layer Back) (tedit 52A30E0A) (tstamp 527FFE6C)
     (at 202.5 55.5 270)
     (descr "SMT capacitor, 1206")
     (path /527C9CEA)
-    (fp_text reference COUT1 (at 0.2 1.6 270) (layer B.SilkS)
+    (fp_text reference COUT1 (at 2.9 0 360) (layer B.SilkS)
       (effects (font (size 0.50038 0.50038) (thickness 0.11938)) (justify mirror))
     )
     (fp_text value "CAP 4.7 µF" (at -0.1 -1.5 270) (layer B.SilkS) hide
@@ -6285,13 +6285,13 @@
     )
   )
 
-  (module C1206C475J8NACTU (layer Front) (tedit 5297F028) (tstamp 52899FE9)
+  (module C1206C475J8NACTU (layer Front) (tedit 52A30E14) (tstamp 52899FE9)
     (at 202.5015 55.499 270)
     (descr "SMT capacitor, 1206")
     (fp_text reference "CAP 4.7 µF" (at -0.099 -1.5985 270) (layer F.SilkS)
       (effects (font (size 0.50038 0.50038) (thickness 0.11938)))
     )
-    (fp_text value COUT1 (at 0.05 1.65 270) (layer F.SilkS) hide
+    (fp_text value COUT1 (at 2.901 -0.0985 360) (layer F.SilkS) hide
       (effects (font (size 0.50038 0.50038) (thickness 0.11938)))
     )
     (fp_line (start 1.143 0.8128) (end 1.143 -0.8128) (layer F.SilkS) (width 0.127))
@@ -6504,12 +6504,12 @@
     )
   )
 
-  (module OpenSourceHardwareLogo (layer Back) (tedit 0) (tstamp 529C110A)
-    (at 94.9 139.6)
-    (fp_text reference G*** (at 0 -9.54532) (layer B.SilkS) hide
+  (module OpenSourceHardwareLogo (layer Back) (tedit 0) (tstamp 52A3108C)
+    (at 93.3 138.5 20)
+    (fp_text reference G*** (at 0 -9.54532 20) (layer B.SilkS) hide
       (effects (font (size 0.82042 0.82042) (thickness 0.16256)) (justify mirror))
     )
-    (fp_text value LOGO (at 0 9.54532) (layer B.SilkS) hide
+    (fp_text value LOGO (at 0 9.54532 20) (layer B.SilkS) hide
       (effects (font (size 0.82042 0.82042) (thickness 0.16256)) (justify mirror))
     )
     (fp_poly (pts (xy -5.45592 8.08482) (xy -5.36194 8.03656) (xy -5.15112 7.90194) (xy -4.8514 7.70636)
@@ -6584,12 +6584,12 @@
       (xy -5.45592 8.08482)) (layer B.SilkS) (width 0.00254))
   )
 
-  (module OpenSourceHardwareLogo (layer Front) (tedit 0) (tstamp 529C1110)
-    (at 94.9 139.6)
-    (fp_text reference G*** (at 0 9.54532) (layer F.SilkS) hide
+  (module OpenSourceHardwareLogo (layer Front) (tedit 0) (tstamp 52A31098)
+    (at 93.3 138.5 20)
+    (fp_text reference G*** (at 0 9.54532 20) (layer F.SilkS) hide
       (effects (font (size 0.82042 0.82042) (thickness 0.16256)))
     )
-    (fp_text value LOGO (at 0 -9.54532) (layer F.SilkS) hide
+    (fp_text value LOGO (at 0 -9.54532 20) (layer F.SilkS) hide
       (effects (font (size 0.82042 0.82042) (thickness 0.16256)))
     )
     (fp_poly (pts (xy -5.45592 8.08482) (xy -5.36194 8.03656) (xy -5.15112 7.90194) (xy -4.8514 7.70636)
@@ -6664,7 +6664,7 @@
       (xy -5.45592 8.08482)) (layer F.SilkS) (width 0.00254))
   )
 
-  (gr_text "Revision 2013-10-11 RGB Backlight Edition" (at 178.435 127 90) (layer F.SilkS)
+  (gr_text "Revision 2013-11-07 RGB Backlight Edition" (at 178.435 127 90) (layer F.SilkS)
     (effects (font (size 2.032 1.524) (thickness 0.3048)) (justify left))
   )
   (gr_text ID (at 129.794 34.544) (layer F.SilkS)
@@ -6682,7 +6682,7 @@
   (gr_text D- (at 146.30146 34.544) (layer F.SilkS)
     (effects (font (size 1.016 1.27) (thickness 0.2032)))
   )
-  (gr_text ErgoDox (at 113.03 48.895) (layer B.SilkS)
+  (gr_text ErgoDox (at 102.6 48.6) (layer B.SilkS)
     (effects (font (size 8.128 12.192) (thickness 2.032)) (justify mirror))
   )
   (gr_text "Components are intended to be\nplaced on the side they are drawn. It is however possible to\ninvert the design. See the webpage for further instructions.\nwww.ergodox.org" (at 65.405 46.99) (layer F.SilkS)
@@ -7524,7 +7524,6 @@
   (segment (start 202.93 45.89) (end 202.48 45.44) (width 0.6096) (layer Front) (net 27) (tstamp 527FF44F))
   (segment (start 194.33032 53.47208) (end 194.33032 52.56968) (width 0.254) (layer Back) (net 27))
   (segment (start 192.278 42.545) (end 189.865 42.545) (width 0.6096) (layer Back) (net 28))
-  (segment (start 192.278 42.545) (end 193.548 42.545) (width 0.6096) (layer Back) (net 28))
   (segment (start 198.26 53.52) (end 198.26 45.24) (width 0.254) (layer Front) (net 28))
   (via (at 198.26 53.52) (size 0.6096) (layers Front Back) (net 28))
   (segment (start 198.26 54.93) (end 198.26 53.52) (width 0.254) (layer Back) (net 28) (tstamp 5280065A))
