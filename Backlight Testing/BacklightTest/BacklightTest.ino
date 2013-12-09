@@ -236,6 +236,17 @@ void setup()
     
     // Start I2C
     Wire.begin();
+    Wire.beginTransmission(driverAddress);
+    Wire.send(currentRegister);
+    Wire.endTransmission();
+    
+    delayMicroseconds(50); //needs at least 1.3us free time between start and stop
+     
+    Wire.requestFrom(driverAddress, 1); // current register
+    while(Wire.available())    // slave may send less than requested
+    { 
+      currentRegisterValue = Wire.receive(); // receive the byte
+    }
     
     // Start Serial console
     Serial.begin(9600);
@@ -243,26 +254,23 @@ void setup()
     Serial.println("Starting ErgoDOX Backlight testing application");
     Serial.println("Reading all registers");
     // Read all registers and print results
-      for (int numRegisters = 2; currentRegister < numRegisters; currentRegister++) {
+    //  for (int numRegisters = 2; currentRegister < numRegisters; currentRegister++) {
         // Fetch register value
-        Wire.beginTransmission(driverAddress);
-        Wire.send(0);
-        Wire.endTransmission();
-        Wire.requestFrom(driverAddress, currentRegister);
-        while( Wire.available() == 0);
-          currentRegisterValue = Wire.receive();
+
+    //    while( Wire.available() == 0);
+    //      currentRegisterValue = Wire.receive();
         // Print result
-        Serial.print("Register (HEX) - (DEC)");
-        Serial.print(currentRegister, HEX);
-        Serial.print(" - ");
-        Serial.print(currentRegister, DEC);
-        Serial.print(" contains (HEX) - (BIN)");
-        Serial.print(currentRegisterValue, HEX);
-        Serial.print(" - ");
-        Serial.print(currentRegisterValue, BIN);
-        Serial.print("\n");
-      }
-    Serial.println("Completed Intialization");
+    //    Serial.print("Register (HEX) - (DEC)");
+    //    Serial.print(currentRegister, HEX);
+    //    Serial.print(" - ");
+    //    Serial.print(currentRegister, DEC);
+    //    Serial.print(" contains (HEX) - (BIN)");
+    //    Serial.print(currentRegisterValue, HEX);
+    //   Serial.print(" - ");
+    //    Serial.print(currentRegisterValue, BIN);
+    //    Serial.print("\n");
+    //  }
+    //Serial.println("Completed Intialization");
 }  
  
 // Main loop
