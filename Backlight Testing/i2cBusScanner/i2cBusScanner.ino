@@ -77,5 +77,5 @@ void loop()
   digitalWrite(redLedPin, LOW);    // set the LED off
   digitalWrite(greenLedPin, LOW);  // set the LED off
   digitalWrite(blueLedPin, LOW);   // set the LED off
-  delay(300);
+  delay(5000);
 }
