@@ -208,107 +208,289 @@
  * 40h EEPROM CONTROL          - EEPROM Control register. This register is used to program EEPROM.
  */
 
-#include "Wire.h"
+// The I2C library support Repeated Starts unlike the Wire library which is bugged.
+// http://dsscircuits.com/articles/arduino-i2c-master-library.html
+#include "I2C.h"
 
-const int redLedPin = 10;
-const int greenLedPin = 11;
-const int blueLedPin = 12;
+// Set RGB LED enable pins
+const int BlueLedPin = 10;
+//const int GreenLedPin = 11;
+const int GreenLedPin = 22;
+const int RedLedPin = 12;
 
-// Default I2C address of the LM3549 LED Driver is 36 hex or 54 decimal
-const int driverAddress = 54;
+// Define Register Addresses for LM3549 LED Driver
+#define BANK_SEL_REG      0x00
+#define IR0_LSB_REG       0x01
+#define IR0_MSB_REG       0x02
+#define IG0_LSB_REG       0x03
+#define IG0_MSB_REG       0x04
+#define IB0_LSB_REG       0x05
+#define IB0_MSB_REG       0x06
+#define IR1_LSB_REG       0x07
+#define IR1_MSB_REG       0x08
+#define IG1_LSB_REG       0x09
+#define IG1_MSB_REG       0x0A
+#define IB1_LSB_REG       0x0B
+#define IB1_MSB_REG       0x0C
+#define IR2_LSB_REG       0x0D
+#define IR2_MSB_REG       0x0E
+#define IG2_LSB_REG       0x0F
+#define IG2_MSB_REG       0x10
+#define IB2_LSB_REG       0x11
+#define IB2_MSB_REG       0x12
+#define FADER_REG         0x13
+#define CTRL_REG          0x14
+#define ILIMIT_REG        0x15
+#define FMASK_REG         0x16
+#define FAULT_REG         0x17
+#define USR1_REG          0x19
+#define USR2_REG          0x1A
+#define EEPROM_REG        0x40
 
-// Configure initial register and storage for register data
-int currentRegister = 0;
-byte currentRegisterValue;
+// Define Parameters and arguments when talking to LM3549 LED Driver
+#define RED    0x00
+#define GREEN  0x01
+#define BLUE   0x02
 
-// Main setup
-void setup()
-{
-  // Enable PWM pins for each LED
-  pinMode(redLedPin, OUTPUT);
-  pinMode(greenLedPin, OUTPUT);
-  pinMode(blueLedPin, OUTPUT);
+#define NO_BRIGHTNESS_CTRL   0x00
+#define PWM_BRIGHTNESS_CTRL  0x01
+#define MFE_BRIGHTNESS_CTRL  0x02
 
-  // By default turn all LEDs off (if current is to high in stored settings we might burn out the LED
-  digitalWrite(redLedPin, LOW);    // set the LED off
-  digitalWrite(greenLedPin, LOW);  // set the LED off
-  digitalWrite(blueLedPin, LOW);   // set the LED off
+#define TIME_OUT_125MS       0x00
+#define TIME_OUT_250MS       0x01
+#define TIME_OUT_500MS       0x02
+#define TIME_OUT_1S          0x03
 
-  // Start I2C
-  Wire.begin();
+#define SOFT_START_OFF      0x00
+#define SOFT_START_500ms    0x01
+#define SOFT_START_1s       0x02
+#define SOFT_START_2s       0x03
 
-  // Start Serial console
+// Fault codes
+#define OCP_FAULT           0b00000001
+#define TSD_FAULT           0x00000010
+#define UVLO_FAULT          0x00000100
+#define OPEN_FAULT          0x00001000
+#define SHORT_FAULT         0x00010000
+#define RED_SHORT_FAULT     0x000|01|000
+#define GREEN_SHORT_FAULT   0x000|10|000
+#define BLUE_SHORT_FAULT    0x000|11|000
+#define RED_OPEN_FAULT      0x0|01|00000
+#define GREEN_OPEN_FAULT    0x0|10|00000
+#define BLUE_OPEN_FAULT     0x0|11|00000
+
+// USB 2.0 has a max current limit of 500mA, hence we hardset converters to 500/550mA
+#define ILIMIT_4USB         0x00
+
+uint8_t LM3549_ADDR = 0x36;
+
+// Selects one of the three current setting banks
+//select_bank  (0,1,2)
+
+// Calculate offsets for bank/color, returns first register, e.g. least significant bits
+uint8_t lookup_reg_addr(uint8_t color, uint8_t bank) {
+  return (bank * 6) + ((color * 2) + 1);
+}
+
+// Sets LED current for a color on the specified bank, current specified in milliAmps, max 700mA
+uint8_t set_current(uint16_t current, uint8_t color, uint8_t bank = 0) {
+  // Look up registers for bank/color
+  uint8_t lsb_register = lookup_reg_addr(color, bank);
+  uint8_t msb_register = lookup_reg_addr(color, bank)+1;
+  uint16_t target_current;
+  float low_current_ratio = 0.635; // (650 / 1024)
+  float high_current_ratio = 0.479;
+  // Current is specified using 10 bits or 1024 possible values, values are linear up to 550mA, then tails off
+  // Minimum current output is 100mA
+  if (current < 550) {
+    target_current = (current - 100) / low_current_ratio; // Correct up to 550mA
+  } 
+  else {
+    target_current = ((current - 550) / high_current_ratio) + 710; // Correct from 550mA to 700mA
+
+  }
+  uint8_t msb_value = (uint8_t)(target_current >> 8);
+  uint8_t lsb_value = (uint8_t)(target_current);
+  Serial.print("Setting Current to ");
+  Serial.print(current);
+  Serial.print("mA equal to ");
+  Serial.print(target_current);
+  Serial.print(" out of 1024 by setting MSB register to 0x");
+  Serial.print(msb_register, HEX);
+  Serial.print(" to 0x" );
+  Serial.print(msb_value, HEX);
+  Serial.print(" and LSB register 0x" );
+  Serial.print(lsb_register, HEX);
+  Serial.print(" to 0x" );
+  Serial.println(lsb_value, HEX); 
+
+  I2c.write(LM3549_ADDR, lsb_register, lsb_value);
+  I2c.write(LM3549_ADDR, msb_register, msb_value);
+}
+// Get LED current for a color on a bank
+uint16_t get_current (uint8_t color, uint8_t bank = 0) {
+  uint8_t lsb_register = lookup_reg_addr(color, bank);
+  uint8_t msb_register = lookup_reg_addr(color, bank)+1;
+  // Read registers from LED driver and combine them into one 16 bit number
+  Serial.print("Reading MSB from register 0x");
+  Serial.print(msb_register, HEX);
+  I2c.read(LM3549_ADDR, lsb_register, (uint8_t)1);
+  uint8_t current_lsb = I2c.receive();
+  I2c.read(LM3549_ADDR, msb_register, (uint8_t)1);
+  uint8_t current_msb = I2c.receive();
+  Serial.print(" which returned 0x");
+  Serial.print(current_msb, HEX);
+  Serial.print(" and LSB from register 0x");
+  Serial.print(lsb_register, HEX);
+  Serial.print(" which returned 0x");
+  Serial.println(current_lsb, HEX);
+  uint16_t current = ((uint16_t) current_msb << 8) | current_lsb ;
+  Serial.print("Current is set to ");
+  Serial.print(current);
+  Serial.println(" out of 1024.");
+  return current;
+}
+
+// Sets the (M)aster (F)ader (C)ontrol, controls brighness of all LEDs
+//set_brightness (0-15)
+
+// Selects if brighness is controlled and if it is by MFC or PWM
+//select_brighness_control (0,1,2)
+
+// Selects how long device stays in active mode after all (EN)able controls have been set low
+//set_time_out (0,1,2,3)
+
+// Enables soft start feature and selects soft start time.
+//set_soft_start
+
+// Set the buck-boost converters current limit values.
+
+// Acknowledge faults, used to disable fault output from desired faults
+//ack_fault (0,1,2,3,4)
+
+// Get fault codes from LED Driver
+//get_faults
+
+// Save current config to EEPROM
+
+// Restore EEPROM factory defaults
+
+// the setup() method runs once, when the sketch starts
+
+void setup() {
+  // Configure and set up Serial Communications
   Serial.begin(19200);
 
-  Serial.println("Starting ErgoDOX Backlight testing application");
-  Serial.print("Reading all registers from device (HEX)");
-  Serial.println(driverAddress, HEX);
-  
-    for (int numRegisters = 27; currentRegister < numRegisters; currentRegister++) {
-      Serial.print("Register : ");
-      Serial.print(currentRegister, HEX);
-      Wire.beginTransmission(driverAddress);
-      Wire.write(currentRegister);
-      Wire.endTransmission();
-      Serial.print(" -> ");
-      Wire.requestFrom(driverAddress, 1);
-      if(Wire.available()) {
-        Serial.println(Wire.read(), HEX);
-      }
-  }
-  
-  // Read all registers and print results
-//  for (int numRegisters = 27; currentRegister < numRegisters; currentRegister++) {
-//    Serial.print("Sending Data to register: ");
-//    Serial.println(currentRegister, HEX);
-//    Wire.beginTransmission(driverAddress); // Start an I2C Transaction
-//    Wire.send((byte)currentRegister); // Specify which register to work with
-//    Wire.endTransmission(); // Send Data
-//
-//    Serial.print("Reading Data from register: ");
-//    Serial.println(driverAddress, HEX);
-//    Wire.requestFrom(driverAddress, (byte)currentRegister); // Read one byte
-//    if( Wire.available() ) { // When the data is available
-//      currentRegisterValue = Wire.read(); // receive the byte
-//    }
-//
-//    // Print result
-//    Serial.print("Register (HEX) - (DEC)");
-//    Serial.print(currentRegister, HEX);
-//    Serial.print(" - ");
-//    Serial.print(currentRegister, DEC);
-//    Serial.print(" contains (HEX) - (BIN)");
-//    Serial.print(currentRegisterValue, HEX);
-//    Serial.print(" - ");
-//    Serial.print(currentRegisterValue, BIN);
-//    Serial.print("\n");
-//  }
+  // Configure and set up I2C
+  I2c.pullup(0);
+  I2c.timeOut(5000);
+  I2c.begin();
 
-//  Wire.beginTransmission(driverAddress);
-//  Wire.write('c');
-//  Wire.write(0xFF);
-//  Wire.write(0x01);
-//  Wire.write(0x01);
-//  Wire.endTransmission();
-//
-//  Wire.beginTransmission(driverAddress);
-//  Wire.write('g');
-//  Wire.endTransmission();
-//  Wire.requestFrom(driverAddress, (byte)3);
-//  if( Wire.available() ) {
-//    Serial.println(Wire.read());
-//    Serial.println(Wire.read());
-//    Serial.println(Wire.read());
-//  }
+  // Find addresses for all I2C peripherals, figure out types and re-address any duplicates
+  //I2c.scan();
 
-  Serial.println("Completed Intialization");
-}  
 
-// Main loop
-void loop() 
-{
-  Serial.println("Cycling LEDs for stress test");
-  delay(5000);
+  // initialize the digital pin as an output.
+  //    I2c.write(LM3549_ADDR, 0x00, 0x00);
+  //  I2c.write(0x36, 0x01, 0x00);
+  //  I2c.write(0x36, 0x02, 0x00);
+  //  I2c.write(0x36, 0x03, 0x00);
+  //  I2c.write(0x36, 0x04, 0x00);
+  //  I2c.write(0x36, 0x05, 0x00);
+  //  I2c.write(0x36, 0x06, 0x00);
+  //  I2c.write(0x36, 0x07, 0x00);
+  //  I2c.write(0x36, 0x06, 0x00);
+  //  I2c.write(0x36, 0x08, 0x00);
+  //  I2c.write(0x36, 0x09, 0x00);
+  //  I2c.write(0x36, 0x0A, 0x00);
+  //  I2c.write(0x36, 0x0B, 0x00);
+  //  I2c.write(0x36, 0x0C, 0x00);
+  //  I2c.write(0x36, 0x0D, 0x00);
+  //  I2c.write(0x36, 0x0E, 0x00);
+  //  I2c.write(0x36, 0x0F, 0x00);
+  //  I2c.write(0x36, 0x10, 0x00);
+  //  I2c.write(0x36, 0x11, 0x00);
+  //  I2c.write(0x36, 0x12, 0x00);
+
+  pinMode(RedLedPin, OUTPUT);
+  pinMode(GreenLedPin, OUTPUT);
+  pinMode(BlueLedPin, OUTPUT);
+  digitalWrite(RedLedPin, LOW);   // set the LED on
+  digitalWrite(GreenLedPin, LOW);   // set the LED on
+  digitalWrite(BlueLedPin, LOW);   // set the LED on
+  //Serial.begin(9600);      // open the serial port at 9600 bps:
+
+  //    for (int thisPin = 1; thisPin < 23; thisPin++)  {
+  //      pinMode(thisPin, OUTPUT);
+  //      digitalWrite(thisPin, LOW);
+  //    }
+  //    digitalWrite( 10, HIGH);
 }
+
+// the loop() methor runs over and over again,
+// as long as the board has power
+
+byte num;
+void loop() {
+  //  for (int cur_reg = 0; cur_reg < 127; cur_reg++)  {
+  //    int cur_reg = 0x17;
+  //    Serial.print(cur_reg, HEX);
+  //    Serial.print(" -> ");
+  //    I2c.read(0x36, 0x05, 1);
+  //    Serial.println(I2c.receive(), HEX);    
+  //    I2c.read(0x36, 0x06, 1);
+  //    Serial.println(I2c.receive(), HEX);    
+  //    delay(100);
+  //    digitalWrite(BlueLedPin, HIGH);   // set the LED on
+  //    delay(1000);
+  //    digitalWrite(BlueLedPin, LOW);   // set the LED on
+  //    digitalWrite(GreenLedPin, HIGH);   // set the LED on
+  //    delay(100);
+  //    digitalWrite(GreenLedPin, LOW);   // set the LED on
+  //    digitalWrite(RedLedPin, HIGH);   // set the LED on
+  //    delay(100);
+  //    digitalWrite(RedLedPin, LOW);   // set the LED on
+  //  }
+  //  set_current(250, BLUE, 0);
+  //  set_current(250, RED, 0);
+  //  set_current(250, GREEN, 0);
+  //    digitalWrite(BlueLedPin, HIGH);   // set the LED on
+  //    delay(1000);
+//  get_current(BLUE);
+//  digitalWrite(BlueLedPin, HIGH);   // set the LED on
+//  delay(3000);
+//  digitalWrite(BlueLedPin, LOW);
+  //  set_current(100, RED, 0);
+  //  set_current(100, GREEN, 0);
+//  digitalWrite(BlueLedPin, HIGH);
+//  delay(3000);
+//  digitalWrite(BlueLedPin, LOW);
+  set_current(250, BLUE);
+  analogWrite(BlueLedPin, 255);
+  get_current(BLUE);
+  delay(3000);  
+  analogWrite(BlueLedPin, 0);
+  delay(2000);
+  set_current(250, GREEN);
+  analogWrite(GreenLedPin, 255);
+  get_current(GREEN);
+  delay(3000);  
+  analogWrite(GreenLedPin, 0);
+  delay(2000);
+  set_current(250, RED);
+  analogWrite(RedLedPin, 255);
+  get_current(RED);
+  delay(3000);  
+  analogWrite(RedLedPin, 0);
+  delay(2000);
+  
+//  set_current(110, BLUE);
+//    analogWrite(BlueLedPin, 10);
+//  delay(3000);
+//  analogWrite(BlueLedPin, 0);
+//  get_current(BLUE);
+//  delay(3000);
+}
+
 
 
